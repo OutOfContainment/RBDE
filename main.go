@@ -3,6 +3,7 @@ package main
 import (
 	"image/color"
 	"log"
+	"path/filepath"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -29,14 +30,44 @@ func main() {
 	// Initialise window
 	RBDE := app.New()
 	win := RBDE.NewWindow("DiEmu")
-	win.Resize(fyne.NewSize(320, 640))
+	win.Resize(fyne.NewSize(250, 500))
 
-	title := container.New(layout.NewCenterLayout(), canvas.NewText("RBDE", color.White))
+	apspath, err := filepath.Abs("images/Logo.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println(apspath)
+
+	image := canvas.NewImageFromFile(apspath)
+	image.FillMode = canvas.ImageFillOriginal
+	title := container.New(layout.NewCenterLayout(), image)
 
 	// Clock timer at the top
 	currTime := widget.NewLabel("")
 	ClockUpdate(currTime)
-	clock := container.New(layout.NewCenterLayout(), currTime)
+	bar := container.New(
+		layout.NewCenterLayout(),
+		canvas.NewRectangle(color.NRGBA{R: 0, G: 0, B: 0, A: 55}),
+		currTime,
+	)
+
+	var testData = [10]string{"1.wav", "2.wav", "3.wav"}
+	list := widget.NewList(
+		func() int {
+			return 10
+		},
+		func() fyne.CanvasObject {
+			return widget.NewLabel("template")
+		},
+		func(i widget.ListItemID, o fyne.CanvasObject) {
+			o.(*widget.Label).SetText(testData[i])
+		})
+
+	rect := canvas.NewRectangle(color.NRGBA{R: 127, G: 20, B: 60, A: 155})
+	screen := container.NewPadded(
+		rect,
+		container.NewBorder(bar, nil, nil, nil, list),
+	)
 
 	buttons := container.New(
 		layout.NewCenterLayout(),
@@ -67,10 +98,13 @@ func main() {
 		),
 	)
 	// GUI layout
-	GUI := container.NewVBox(
-		title,
-		clock,
-		buttons,
+	GUI := container.NewGridWithRows(
+		2,
+		screen,
+		container.NewVBox(
+			title,
+			buttons,
+		),
 	)
 	win.SetContent(GUI)
 
