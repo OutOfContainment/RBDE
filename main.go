@@ -1,116 +1,63 @@
 package main
 
+// Functions that end with "_go" are meant to be Goroutines
+
 import (
-	"image/color"
+	"database/sql"
 	"log"
-	"path/filepath"
-	"time"
+	"os"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
-	"fyne.io/fyne/v2/canvas"
-	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/layout"
-	"fyne.io/fyne/v2/widget"
+	_ "github.com/mattn/go-sqlite3"
 )
-
-func ClockUpdate(currTime *widget.Label) {
-	go func() {
-		for range time.Tick(time.Second) {
-			time := time.Now().Format(time.TimeOnly)
-			currTime.SetText(time)
-		}
-	}()
-
-}
 
 func main() {
 	log.Println("Start")
+
+	go createDB_go()
+	records, _ := sql.Open("sqlite3", "./records.db")
+	defer records.Close()
+	go createTable_go(records)
 
 	// Initialise window
 	RBDE := app.New()
 	win := RBDE.NewWindow("DiEmu")
 	win.Resize(fyne.NewSize(250, 500))
 
-	apspath, err := filepath.Abs("images/Logo.png")
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println(apspath)
-
-	image := canvas.NewImageFromFile(apspath)
-	image.FillMode = canvas.ImageFillOriginal
-	title := container.New(layout.NewCenterLayout(), image)
-
-	// Clock timer at the top
-	currTime := widget.NewLabel("")
-	ClockUpdate(currTime)
-	bar := container.New(
-		layout.NewCenterLayout(),
-		canvas.NewRectangle(color.NRGBA{R: 0, G: 0, B: 0, A: 55}),
-		currTime,
-	)
-
-	var testData = [10]string{"1.wav", "2.wav", "3.wav"}
-	list := widget.NewList(
-		func() int {
-			return 10
-		},
-		func() fyne.CanvasObject {
-			return widget.NewLabel("template")
-		},
-		func(i widget.ListItemID, o fyne.CanvasObject) {
-			o.(*widget.Label).SetText(testData[i])
-		})
-
-	rect := canvas.NewRectangle(color.NRGBA{R: 127, G: 20, B: 60, A: 155})
-	screen := container.NewPadded(
-		rect,
-		container.NewBorder(bar, nil, nil, nil, list),
-	)
-
-	buttons := container.New(
-		layout.NewCenterLayout(),
-		container.NewVBox(
-			container.NewHBox(
-				widget.NewButton("<<", func() {
-					log.Println("<<")
-				}),
-				widget.NewButton("Record", func() {
-					log.Println("Play")
-				}),
-				widget.NewButton("Play/Stop", func() {
-					log.Println("Stop")
-				}),
-				widget.NewButton(">>", func() {
-					log.Println(">>")
-				}),
-			),
-			container.NewHBox(
-				widget.NewButton("Menu", func() {
-					log.Println("Menu")
-				}),
-				layout.NewSpacer(),
-				widget.NewButton("Delete", func() {
-					log.Println("Delete")
-				}),
-			),
-		),
-	)
-	// GUI layout
-	GUI := container.NewGridWithRows(
-		2,
-		screen,
-		container.NewVBox(
-			title,
-			buttons,
-		),
-	)
-	win.SetContent(GUI)
+	win.SetContent(skeleton(RBDE, win))
 
 	// Open window
-	log.Println("Show window!")
+	defer log.Println("Goodbye.")
+	defer win.ShowAndRun()
+	defer log.Println("Open window ##")
+}
 
-	win.ShowAndRun()
-	log.Println("Goodbye ... :(")
+func createDB_go() {
+	os.Remove("records.db")
+
+	log.Println("Creating records.db ..")
+	file, err := os.Create("records.db")
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	file.Close()
+	log.Println("records.db created")
+}
+
+func createTable_go(records *sql.DB) {
+	createRecordsTableSQL := `CREATE TABLE IF NOT EXISTS records (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		name TEXT,
+		sample_count INGEGER,
+		wav_data BLOB
+	);`
+
+	log.Println("Create records table ..")
+	statement, err := records.Prepare(createRecordsTableSQL)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	statement.Exec()
+	log.Println("Records table created")
 }

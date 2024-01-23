@@ -5,6 +5,7 @@ go 1.21.5
 require (
 	fyne.io/fyne/v2 v2.4.3
 	github.com/gen2brain/malgo v0.11.10
+	github.com/mattn/go-sqlite3 v1.14.19
 )
 
 require (
