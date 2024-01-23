@@ -22,8 +22,6 @@ type Sound struct {
 	recorder *recorder
 	player   *player
 
-	lastRecordName string
-
 	stopChans map[string]chan struct{}
 	mu        sync.Mutex
 
@@ -61,15 +59,12 @@ func (s *Sound) Record() error {
 		recordName := fmt.Sprintf("%d_record", time.Now().UnixMilli())
 		if recordErr := s.recorder.Record(recordName); err != nil {
 			err = recordErr
-		} else {
-			s.lastRecordName = recordName
 		}
 	}()
-
 	return err
 }
 
-func (s *Sound) Play() {
+func (s *Sound) Play(recordId int) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -79,7 +74,10 @@ func (s *Sound) Play() {
 
 	s.state = playingState
 
-	go s.player.Play(s.lastRecordName)
+	go func() {
+		s.player.Play(recordId)
+		s.state = idleState
+	}()
 }
 
 func (s *Sound) Stop() {
@@ -89,16 +87,14 @@ func (s *Sound) Stop() {
 	switch s.state {
 	case idleState:
 		log.Println("Nothing to stop.")
-	case recordingState:
-		go func() {
-			s.stopChans[recordingState] <- struct{}{}
-		}()
 	case playingState:
 		go func() {
 			s.stopChans[playingState] <- struct{}{}
 		}()
 	default:
-		log.Println("Unknown state.")
+		go func() {
+			s.stopChans[recordingState] <- struct{}{}
+		}()
 	}
 
 	s.state = idleState

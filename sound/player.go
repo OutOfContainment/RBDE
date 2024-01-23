@@ -9,7 +9,7 @@ import (
 	"github.com/gen2brain/malgo"
 )
 
-const getLastRecordQuery = "SELECT * FROM record WHERE id = ?"
+const getRecordByIdQuery = "SELECT * FROM record WHERE id = ?"
 
 type player struct {
 	stopChan chan struct{}
@@ -21,7 +21,7 @@ func newPlayer(stopChan chan struct{}, db *sql.DB) *player {
 	return &player{stopChan: stopChan, db: db}
 }
 
-func (p *player) Play(recordName string) error {
+func (p *player) Play(recordId int) error {
 	if p.paused {
 		p.paused = false
 		return nil
@@ -40,13 +40,13 @@ func (p *player) Play(recordName string) error {
 	}()
 
 	// TODO: query record by id or name
-	getLastRecordStatement, err := p.db.Prepare(getLastRecordQuery)
+	getRecordByIdStatement, err := p.db.Prepare(getRecordByIdQuery)
 	if err != nil {
 		return err
 	}
 
 	record := Record{}
-	row := getLastRecordStatement.QueryRow(1)
+	row := getRecordByIdStatement.QueryRow(recordId)
 	row.Scan(&record.Id, &record.Name, &record.SampleCount, &record.RawData)
 
 	deviceConfig := malgo.DefaultDeviceConfig(malgo.Duplex)

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"fyne.io/fyne/v2/theme"
 	"image/color"
 	"log"
@@ -15,6 +16,19 @@ import (
 	"github.com/OutOfContainment/ReallyBadDictaphoneEmulator/sound"
 )
 
+const (
+	idleState      = "idle"
+	recordingState = "recording"
+	pauseState     = "pause"
+)
+
+var (
+	state = idleState
+
+	currentTrack        int
+	currentTracksAmount int
+)
+
 func clockUpdate_go(currTime *widget.Label) {
 	for range time.Tick(time.Second) {
 		time := time.Now().Format(time.TimeOnly)
@@ -23,17 +37,29 @@ func clockUpdate_go(currTime *widget.Label) {
 
 }
 
+func screenCountUpdate(currentTrack, currentTracksAmount int, tracksInterface *canvas.Text) {
+	tracksInterface.Text = fmt.Sprintf("%d / %d", currentTrack, currentTracksAmount)
+	tracksInterface.Refresh()
+}
+
 func skeleton(RBDE fyne.App, win fyne.Window, sound *sound.Sound) *fyne.Container {
+	tracksInterface := canvas.NewText(fmt.Sprintf("%d / %d", currentTrack, currentTracksAmount), color.White)
+	tracksInterface.TextSize = 35
+
+	tracksIcon := container.NewGridWithColumns(2, widget.NewLabel(""), widget.NewIcon(theme.StorageIcon()))
+
 	// add image
-	apspath, err := filepath.Abs("images/Logo.png")
+	logopath, err := filepath.Abs("images/Logo.png")
+	wallpaperpath, err := filepath.Abs("images/wallpaper.jpg")
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println(apspath)
+	log.Println(logopath)
 
-	image := canvas.NewImageFromFile(apspath)
-	image.FillMode = canvas.ImageFillOriginal
-	title := container.New(layout.NewCenterLayout(), image)
+	logo := canvas.NewImageFromFile(logopath)
+	wallpaper := canvas.NewImageFromFile(wallpaperpath)
+	logo.FillMode = canvas.ImageFillOriginal
+	title := container.New(layout.NewCenterLayout(), logo)
 
 	// Clock timer at the top
 	currTime := widget.NewLabel("")
@@ -42,55 +68,83 @@ func skeleton(RBDE fyne.App, win fyne.Window, sound *sound.Sound) *fyne.Containe
 		layout.NewCenterLayout(),
 		canvas.NewRectangle(color.NRGBA{R: 0, G: 0, B: 0, A: 55}),
 		currTime,
+		widget.NewSeparator(),
 	)
 
-	var testData = []string{"1.wav", "2.wav", "3.wav"}
-	list := widget.NewList(
-		func() int { return len(testData) },
-		func() fyne.CanvasObject {
-			return widget.NewButtonWithIcon("",
-				theme.MediaMusicIcon(),
-				func() { log.Println("List") },
-			)
-		},
-		func(id widget.ListItemID, obj fyne.CanvasObject) {
-			obj.(*widget.Button).SetText(testData[id])
-		})
-
 	screen := container.NewPadded(
-		canvas.NewRectangle(color.NRGBA{R: 127, G: 20, B: 60, A: 155}),
-		container.NewPadded(container.NewBorder(bar, nil, nil, nil, list)),
+		//		canvas.NewRectangle(color.NRGBA{R: 127, G: 20, B: 60, A: 155}),
+		wallpaper,
+		container.NewBorder(
+			bar,
+			nil,
+			nil,
+			container.NewPadded(container.NewGridWithColumns(
+				2,
+				tracksIcon,
+				tracksInterface,
+			)),
+			nil,
+		),
 	)
 
 	buttons := container.NewCenter(
 		container.NewVBox(
 			container.NewHBox(
-				widget.NewButtonWithIcon("", theme.MediaRecordIcon(), func() {
-					log.Println("Record Button Pressed")
-					sound.Record()
-				}),
-				widget.NewButtonWithIcon("", theme.MediaPlayIcon(), func() {
-					log.Println("Play Button Pressed")
-					sound.Play()
+				widget.NewButtonWithIcon("", theme.MediaSkipPreviousIcon(), func() {
+					log.Println("Previous Media Button Pressed")
+					if currentTrack > 1 && state == idleState {
+						currentTrack--
+						screenCountUpdate(currentTrack, currentTracksAmount, tracksInterface)
+					}
 				}),
 				widget.NewButtonWithIcon("", theme.MediaStopIcon(), func() {
 					log.Println("Stop Button Pressed")
 					sound.Stop()
+					state = idleState
+				}),
+				widget.NewButtonWithIcon("", theme.MediaPlayIcon(), func() {
+					log.Println("Play Button Pressed")
+					sound.Play(currentTrack)
+				}),
+				widget.NewButtonWithIcon("", theme.MediaRecordIcon(), func() {
+					log.Println("Record Button Pressed")
+					sound.Record()
+					if state == idleState {
+						if currentTrack <= 10 {
+							if currentTrack == currentTracksAmount {
+								currentTrack++
+							}
+							currentTracksAmount++
+							screenCountUpdate(currentTrack, currentTracksAmount, tracksInterface)
+							log.Println(currentTrack, " / ", currentTracksAmount)
+						}
+					}
+					state = recordingState
 				}),
 				widget.NewButtonWithIcon("", theme.MediaPauseIcon(), func() {
 					log.Println("Pause Button Pressed")
 					sound.Pause()
+					state = pauseState
+				}),
+				widget.NewButtonWithIcon("", theme.MediaSkipNextIcon(), func() {
+					log.Println("Previous Next Button Pressed")
+					if currentTrack < currentTracksAmount && state == idleState {
+						currentTrack++
+						screenCountUpdate(currentTrack, currentTracksAmount, tracksInterface)
+					}
 				}),
 			),
-			container.NewHBox(
-				widget.NewButton("Menu", func() {
-					log.Println("Menu Button Pressed")
-				}),
-				layout.NewSpacer(),
-				widget.NewButton("Delete", func() {
-					log.Println("Delete Button Pressed")
-				}),
-			),
+			/*
+				container.NewHBox(
+					widget.NewButton("Menu", func() {
+						log.Println("Menu Button Pressed")
+					}),
+					layout.NewSpacer(),
+					widget.NewButton("Delete", func() {
+						log.Println("Delete Button Pressed")
+					}),
+				),
+			*/
 		),
 	)
 
