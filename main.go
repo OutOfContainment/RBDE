@@ -9,23 +9,29 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
+	"github.com/OutOfContainment/ReallyBadDictaphoneEmulator/sound"
 	_ "github.com/mattn/go-sqlite3"
 )
 
 func main() {
 	log.Println("Start")
 
-	go createDB_go()
-	records, _ := sql.Open("sqlite3", "./records.db")
+	createDB()
+	records, err := sql.Open("sqlite3", "./records.db")
+	if err != nil {
+		log.Fatal("Could not open database ", err)
+	}
 	defer records.Close()
-	go createTable_go(records)
+	createTable(records)
+
+	sound := sound.NewSound(records)
 
 	// Initialise window
 	RBDE := app.New()
 	win := RBDE.NewWindow("DiEmu")
 	win.Resize(fyne.NewSize(250, 500))
 
-	win.SetContent(skeleton(RBDE, win))
+	win.SetContent(skeleton(RBDE, win, sound))
 
 	// Open window
 	defer log.Println("Goodbye.")
@@ -33,7 +39,7 @@ func main() {
 	defer log.Println("Open window ##")
 }
 
-func createDB_go() {
+func createDB() {
 	os.Remove("records.db")
 
 	log.Println("Creating records.db ..")
@@ -45,8 +51,8 @@ func createDB_go() {
 	log.Println("records.db created")
 }
 
-func createTable_go(records *sql.DB) {
-	createRecordsTableSQL := `CREATE TABLE IF NOT EXISTS records (
+func createTable(records *sql.DB) {
+	createRecordsTableSQL := `CREATE TABLE IF NOT EXISTS record (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		name TEXT,
 		sample_count INGEGER,

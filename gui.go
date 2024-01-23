@@ -11,6 +11,7 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
+	"github.com/OutOfContainment/ReallyBadDictaphoneEmulator/sound"
 )
 
 func clockUpdate_go(currTime *widget.Label) {
@@ -21,7 +22,7 @@ func clockUpdate_go(currTime *widget.Label) {
 
 }
 
-func skeleton(RBDE fyne.App, win fyne.Window) *fyne.Container {
+func skeleton(RBDE fyne.App, win fyne.Window, sound *sound.Sound) *fyne.Container {
 	// add image
 	apspath, err := filepath.Abs("images/Logo.png")
 	if err != nil {
@@ -62,26 +63,30 @@ func skeleton(RBDE fyne.App, win fyne.Window) *fyne.Container {
 	buttons := container.NewCenter(
 		container.NewVBox(
 			container.NewHBox(
-				widget.NewButton("<<", func() {
-					log.Println("<<")
-				}),
 				widget.NewButton("Record", func() {
-					log.Println("Play")
+					log.Println("Record Button Pressed")
+					sound.Record()
 				}),
-				widget.NewButton("Play/Stop", func() {
-					log.Println("Stop")
+				widget.NewButton("Play", func() {
+					log.Println("Play Button Pressed")
+					sound.Play()
 				}),
-				widget.NewButton(">>", func() {
-					log.Println(">>")
+				widget.NewButton("Stop", func() {
+					log.Println("Stop Button Pressed")
+					sound.Stop()
+				}),
+				widget.NewButton("Pause", func() {
+					log.Println("Pause Button Pressed")
+					sound.Pause()
 				}),
 			),
 			container.NewHBox(
 				widget.NewButton("Menu", func() {
-					log.Println("Menu")
+					log.Println("Menu Button Pressed")
 				}),
 				layout.NewSpacer(),
 				widget.NewButton("Delete", func() {
-					log.Println("Delete")
+					log.Println("Delete Button Pressed")
 				}),
 			),
 		),
