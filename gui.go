@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fyne.io/fyne/v2/theme"
 	"image/color"
 	"log"
 	"path/filepath"
@@ -43,39 +44,40 @@ func skeleton(RBDE fyne.App, win fyne.Window, sound *sound.Sound) *fyne.Containe
 		currTime,
 	)
 
-	var testData = [10]string{"1.wav", "2.wav", "3.wav"}
+	var testData = []string{"1.wav", "2.wav", "3.wav"}
 	list := widget.NewList(
-		func() int {
-			return 10
-		},
+		func() int { return len(testData) },
 		func() fyne.CanvasObject {
-			return widget.NewLabel("template")
+			return widget.NewButtonWithIcon("",
+				theme.MediaMusicIcon(),
+				func() { log.Println("List") },
+			)
 		},
-		func(i widget.ListItemID, o fyne.CanvasObject) {
-			o.(*widget.Label).SetText(testData[i])
+		func(id widget.ListItemID, obj fyne.CanvasObject) {
+			obj.(*widget.Button).SetText(testData[id])
 		})
 
 	screen := container.NewPadded(
 		canvas.NewRectangle(color.NRGBA{R: 127, G: 20, B: 60, A: 155}),
-		container.NewBorder(bar, nil, nil, nil, list),
+		container.NewPadded(container.NewBorder(bar, nil, nil, nil, list)),
 	)
 
 	buttons := container.NewCenter(
 		container.NewVBox(
 			container.NewHBox(
-				widget.NewButton("Record", func() {
+				widget.NewButtonWithIcon("", theme.MediaRecordIcon(), func() {
 					log.Println("Record Button Pressed")
 					sound.Record()
 				}),
-				widget.NewButton("Play", func() {
+				widget.NewButtonWithIcon("", theme.MediaPlayIcon(), func() {
 					log.Println("Play Button Pressed")
 					sound.Play()
 				}),
-				widget.NewButton("Stop", func() {
+				widget.NewButtonWithIcon("", theme.MediaStopIcon(), func() {
 					log.Println("Stop Button Pressed")
 					sound.Stop()
 				}),
-				widget.NewButton("Pause", func() {
+				widget.NewButtonWithIcon("", theme.MediaPauseIcon(), func() {
 					log.Println("Pause Button Pressed")
 					sound.Pause()
 				}),

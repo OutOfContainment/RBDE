@@ -9,9 +9,13 @@ import (
 )
 
 const (
-	idleState      = "idle"
+	idleState = "idle"
+
 	recordingState = "recording"
-	playingState   = "playing"
+	recPausedState = "paused recording"
+
+	playingState    = "playing"
+	playPausedState = "paused playing"
 )
 
 type Sound struct {
@@ -42,78 +46,76 @@ func NewSound(db *sql.DB) *Sound {
 	}
 }
 
-func (d *Sound) Record() error {
-	d.mu.Lock()
-	defer d.mu.Unlock()
+func (s *Sound) Record() error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 
-	if d.state == recordingState {
+	if s.state != idleState && s.state != recPausedState {
 		return nil
 	}
 
-	d.state = recordingState
+	s.state = recordingState
 
 	var err error
 	go func() {
 		recordName := fmt.Sprintf("%d_record", time.Now().UnixMilli())
-		if recordErr := d.recorder.Record(recordName); err != nil {
+		if recordErr := s.recorder.Record(recordName); err != nil {
 			err = recordErr
 		} else {
-			d.lastRecordName = recordName
+			s.lastRecordName = recordName
 		}
 	}()
 
 	return err
 }
 
-func (d *Sound) Play() {
-	d.mu.Lock()
-	defer d.mu.Unlock()
+func (s *Sound) Play() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 
-	if d.state == playingState {
+	if s.state != idleState && s.state != playPausedState {
 		return
 	}
 
-	d.state = playingState
+	s.state = playingState
 
-	go d.player.Play(d.lastRecordName)
+	go s.player.Play(s.lastRecordName)
 }
 
-func (d *Sound) Stop() {
-	d.mu.Lock()
-	defer d.mu.Unlock()
+func (s *Sound) Stop() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 
-	switch d.state {
+	switch s.state {
 	case idleState:
 		log.Println("Nothing to stop.")
 	case recordingState:
 		go func() {
-			d.stopChans[recordingState] <- struct{}{}
+			s.stopChans[recordingState] <- struct{}{}
 		}()
 	case playingState:
 		go func() {
-			d.stopChans[playingState] <- struct{}{}
+			s.stopChans[playingState] <- struct{}{}
 		}()
 	default:
 		log.Println("Unknown state.")
 	}
 
-	d.state = idleState
+	s.state = idleState
 }
 
-func (d *Sound) Pause() {
-	d.mu.Lock()
-	defer d.mu.Unlock()
-	switch d.state {
+func (s *Sound) Pause() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	switch s.state {
 	case idleState:
 		log.Println("Nothing to pause.")
 	case recordingState:
-		go func() {
-			d.recorder.Pause()
-		}()
+		s.recorder.Pause()
+		s.state = recPausedState
 	case playingState:
-		go func() {
-			d.player.Pause()
-		}()
+		s.player.Pause()
+		s.state = playPausedState
 	default:
 		log.Println("Unknown state.")
 	}

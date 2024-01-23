@@ -55,7 +55,7 @@ func createTable(records *sql.DB) {
 	createRecordsTableSQL := `CREATE TABLE IF NOT EXISTS record (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		name TEXT,
-		sample_count INGEGER,
+		sample_count INTEGER,
 		wav_data BLOB
 	);`
 

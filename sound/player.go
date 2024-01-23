@@ -9,7 +9,7 @@ import (
 	"github.com/gen2brain/malgo"
 )
 
-const getLastRecordQuery = "SELECT * FROM record ORDER BY id DESC LIMIT 1"
+const getLastRecordQuery = "SELECT * FROM record WHERE id = ?"
 
 type player struct {
 	stopChan chan struct{}
@@ -46,7 +46,7 @@ func (p *player) Play(recordName string) error {
 	}
 
 	record := Record{}
-	row := getLastRecordStatement.QueryRow()
+	row := getLastRecordStatement.QueryRow(1)
 	row.Scan(&record.Id, &record.Name, &record.SampleCount, &record.RawData)
 
 	deviceConfig := malgo.DefaultDeviceConfig(malgo.Duplex)
