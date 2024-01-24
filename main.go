@@ -30,7 +30,7 @@ func main() {
 	// Initialise window
 	RBDE := app.New()
 	win := RBDE.NewWindow("DiEmu")
-	win.Resize(fyne.NewSize(250, 400))
+	win.Resize(fyne.NewSize(240, 400))
 
 	win.SetContent(gui.Skeleton(RBDE, win, sound))
 
