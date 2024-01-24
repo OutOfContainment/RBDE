@@ -17,6 +17,13 @@ import (
 func main() {
 	log.Println("Start")
 
+	// set font
+	if _, err := os.Stat("font.ttf"); err == nil {
+		os.Setenv("FYNE_FONT", "font.ttf")
+	} else {
+		log.Println("'font.ttf' not found; using default font.")
+	}
+
 	createDB()
 	records, err := sql.Open("sqlite3", "./records.db")
 	if err != nil {
