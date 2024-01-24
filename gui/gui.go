@@ -1,4 +1,4 @@
-package main
+package gui
 
 import (
 	"fmt"
@@ -42,7 +42,7 @@ func screenCountUpdate(currentTrack, currentTracksAmount int, tracksInterface *c
 	tracksInterface.Refresh()
 }
 
-func skeleton(RBDE fyne.App, win fyne.Window, sound *sound.Sound) *fyne.Container {
+func Skeleton(RBDE fyne.App, win fyne.Window, sound *sound.Sound) *fyne.Container {
 	tracksInterface := canvas.NewText(fmt.Sprintf("%d / %d", currentTrack, currentTracksAmount), color.White)
 	tracksInterface.TextSize = 35
 
@@ -50,9 +50,12 @@ func skeleton(RBDE fyne.App, win fyne.Window, sound *sound.Sound) *fyne.Containe
 
 	// add image
 	logopath, err := filepath.Abs("images/Logo.png")
+	if err != nil {
+		log.Fatal("Error getting Logo.png file", err)
+	}
 	wallpaperpath, err := filepath.Abs("images/wallpaper.jpg")
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Error getting wallpaper.png file", err)
 	}
 	log.Println(logopath)
 
@@ -149,7 +152,7 @@ func skeleton(RBDE fyne.App, win fyne.Window, sound *sound.Sound) *fyne.Containe
 	)
 
 	// GUI layout
-	skeleton := container.NewGridWithRows(
+	Skeleton := container.NewGridWithRows(
 		2,
 		screen,
 		container.NewVBox(
@@ -157,5 +160,5 @@ func skeleton(RBDE fyne.App, win fyne.Window, sound *sound.Sound) *fyne.Containe
 			buttons,
 		),
 	)
-	return skeleton
+	return Skeleton
 }

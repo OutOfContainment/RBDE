@@ -9,6 +9,7 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
+	"github.com/OutOfContainment/ReallyBadDictaphoneEmulator/gui"
 	"github.com/OutOfContainment/ReallyBadDictaphoneEmulator/sound"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -31,7 +32,7 @@ func main() {
 	win := RBDE.NewWindow("DiEmu")
 	win.Resize(fyne.NewSize(250, 400))
 
-	win.SetContent(skeleton(RBDE, win, sound))
+	win.SetContent(gui.Skeleton(RBDE, win, sound))
 
 	// Open window
 	defer log.Println("Goodbye.")
