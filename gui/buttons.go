@@ -8,7 +8,7 @@ import (
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
-	"github.com/OutOfContainment/ReallyBadDictaphoneEmulator/sound"
+	"github.com/OutOfContainment/RBDE/sound"
 )
 
 func buttons(

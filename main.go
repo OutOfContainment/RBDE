@@ -9,8 +9,8 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
-	"github.com/OutOfContainment/ReallyBadDictaphoneEmulator/gui"
-	"github.com/OutOfContainment/ReallyBadDictaphoneEmulator/sound"
+	"github.com/OutOfContainment/RBDE/gui"
+	"github.com/OutOfContainment/RBDE/sound"
 	_ "github.com/mattn/go-sqlite3"
 )
 
