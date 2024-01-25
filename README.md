@@ -1,7 +1,7 @@
 <img src="images/Preview.png" align="Right">
 
 # Really _Questionable_ Dictaphone Emulator
-Simpls sound-manipulating program written using [Fyne](https://github.com/fyne-io/fyne) and [Malgo](https://github.com/gen2brain/malgo).
+Simple sound-manipulating program written using [Fyne](https://github.com/fyne-io/fyne) and [Malgo](https://github.com/gen2brain/malgo).
 
 Learning project.
 ## Demo
