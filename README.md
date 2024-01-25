@@ -1,12 +1,10 @@
-<img src="images/Logo.png" align="right" width="210" height="70">
+<img src="images/Preview.png" align="Right">
 
 # Really _Questionable_ Dictaphone Emulator
 Simpls sound-manipulating program written using [Fyne](https://github.com/fyne-io/fyne) and [Malgo](https://github.com/gen2brain/malgo).
 
 Learning project.
 ## Demo
-<img src="images/Preview.png" align="Right">
-
 - Crossplatform* - Windows, GNU/Linux, OpenBSD, MacOS, <s>Android</s>
 - Change theme using environment variable "FYNE_THEME" (white, dark)
 - Custom font support using e.v. "FYNE_FONT" or by adding "font.ttf" in app directory
