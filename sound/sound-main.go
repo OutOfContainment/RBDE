@@ -22,6 +22,8 @@ type Sound struct {
 	recorder *recorder
 	player   *player
 
+	db *sql.DB
+
 	stopChans map[string]chan struct{}
 	mu        sync.Mutex
 
@@ -36,12 +38,22 @@ func NewSound(db *sql.DB) *Sound {
 	return &Sound{
 		recorder: newRecorder(stopChans[recordingState], db),
 		player:   newPlayer(stopChans[playingState], db),
+		db:       db,
 
 		stopChans: stopChans,
 		mu:        sync.Mutex{},
 
 		state: idleState,
 	}
+}
+
+func (s *Sound) ClearRecords() {
+	clearTableQuery := "DELETE FROM record"
+	clearTableStatement, err := s.db.Prepare(clearTableQuery)
+	if err != nil {
+		log.Fatal(err)
+	}
+	clearTableStatement.Exec()
 }
 
 func (s *Sound) Record() error {

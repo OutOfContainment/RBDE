@@ -15,27 +15,20 @@ import (
 	"github.com/OutOfContainment/RBDE/sound"
 )
 
-const (
-	idleState      = "idle"
-	recordingState = "recording"
-	pauseState     = "pause"
+var currentTrack int
 
-	tracksLimit = 10
-)
+func Skeleton(
+	RBDE fyne.App,
+	win fyne.Window,
+	sound *sound.Sound,
+	currentTracksAmount int) *fyne.Container {
 
-var (
-	state = idleState
-
-	currentTrack        int
-	currentTracksAmount int
-)
-
-func Skeleton(RBDE fyne.App, win fyne.Window, sound *sound.Sound) *fyne.Container {
-
-	tracksInterface := canvas.NewText(fmt.Sprintf("%d / %d", currentTrack, currentTracksAmount), color.White)
+	tracksInterface := canvas.NewText(fmt.Sprintf("%d / %d",
+		currentTrack, currentTracksAmount), color.White)
 	tracksInterface.TextSize = 35
 
-	tracksIcon := container.NewGridWithColumns(2, widget.NewLabel(""), widget.NewIcon(theme.StorageIcon()))
+	tracksIcon := container.NewGridWithColumns(2,
+		widget.NewLabel(""), widget.NewIcon(theme.StorageIcon()))
 
 	// add images
 	wallpaperpath, err := filepath.Abs("images/wallpaper.jpg")
@@ -78,9 +71,9 @@ func Skeleton(RBDE fyne.App, win fyne.Window, sound *sound.Sound) *fyne.Containe
 	// GUI layout
 	Skeleton := container.NewGridWithRows(2, // grid amount
 		screen,
-		container.NewVBox(
+		container.NewGridWithRows(2,
 			logoLayout,
-			buttons(RBDE, win, sound, tracksInterface),
+			buttons(RBDE, win, sound, currentTracksAmount, tracksInterface),
 		),
 	)
 	return Skeleton

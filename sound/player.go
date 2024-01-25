@@ -9,7 +9,9 @@ import (
 	"github.com/gen2brain/malgo"
 )
 
-const getRecordByIdQuery = "SELECT * FROM record WHERE id = ?"
+const getRecordByIdQuery = `SELECT id, name, sample_count, wav_data FROM 
+( SELECT ROW_NUMBER() OVER (ORDER BY id ASC) AS row_id, * FROM record ORDER BY row_id )
+WHERE row_id = ?`
 
 type player struct {
 	stopChan chan struct{}

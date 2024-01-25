@@ -14,6 +14,8 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+var tracksAmount int
+
 func main() {
 	log.Println("Start")
 
@@ -24,13 +26,9 @@ func main() {
 		log.Println("'font.ttf' not found; using default font.")
 	}
 
-	createDB()
-	records, err := sql.Open("sqlite3", "./records.db")
-	if err != nil {
-		log.Fatal("Could not open database ", err)
-	}
+	// open existing database || create database
+	records := getDatabase()
 	defer records.Close()
-	createTable(records)
 
 	sound := sound.NewSound(records)
 
@@ -39,7 +37,7 @@ func main() {
 	win := RBDE.NewWindow("DiEmu")
 	win.Resize(fyne.NewSize(240, 400))
 
-	win.SetContent(gui.Skeleton(RBDE, win, sound))
+	win.SetContent(gui.Skeleton(RBDE, win, sound, tracksAmount))
 
 	// Open window
 	defer log.Println("Goodbye.")
@@ -47,9 +45,30 @@ func main() {
 	defer log.Println("Open window ##")
 }
 
-func createDB() {
-	os.Remove("records.db")
+func getDatabase() *sql.DB {
+	if _, err := os.Stat("records.db"); err == nil {
+		records, err := sql.Open("sqlite3", "./records.db")
+		if err != nil {
+			log.Fatal("Could not open existing database ", err)
+		}
 
+		tracksAmount = getTracksAmount(records)
+		log.Println(tracksAmount, "tracks in opened database")
+		return records
+
+	} else {
+		createDB()
+		records, err := sql.Open("sqlite3", "./records.db")
+		if err != nil {
+			log.Fatal("Could not open database ", err)
+		}
+
+		createTable(records)
+		return records
+	}
+}
+
+func createDB() {
 	log.Println("Creating records.db ..")
 	file, err := os.Create("records.db")
 	if err != nil {
@@ -74,4 +93,16 @@ func createTable(records *sql.DB) {
 	}
 	statement.Exec()
 	log.Println("Records table created")
+}
+
+func getTracksAmount(db *sql.DB) int {
+	getTracksAmountQuery := "SELECT COUNT(id) FROM record"
+	getTracksAmountStatement, err := db.Prepare(getTracksAmountQuery)
+	if err != nil {
+		log.Fatal("ErrorSQLOpen", err)
+	}
+
+	getTracksAmountStatement.QueryRow().Scan(&tracksAmount)
+
+	return tracksAmount
 }
